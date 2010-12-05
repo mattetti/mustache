@@ -31,16 +31,21 @@ class Mustache
     # the compilation step and run the Ruby version of the template
     # directly.
     def render(context)
-      # Compile our Mustache template into a Ruby string
-      compiled = "def render(ctx) #{compile} end"
+      if self.respond_to?(:render_compiled)
+        render_compiled(context)
+      else
+        # Compile our Mustache template into a Ruby string
+        compiled = "def render_compiled(ctx) #{compile} end"
 
-      # Here we rewrite ourself with the interpolated Ruby version of
-      # our Mustache template so subsequent calls are very fast and
-      # can skip the compilation stage.
-      instance_eval(compiled, __FILE__, __LINE__ - 1)
+        # Here we rewrite ourself with the interpolated Ruby version of
+        # our Mustache template so subsequent calls are very fast and
+        # can skip the compilation stage.
+        instance_eval(compiled, __FILE__, __LINE__ - 1)
 
-      # Call the newly rewritten version of #render
-      render(context)
+        # Call the newly rewritten version of #render
+        render_compiled(context)
+      end
+
     end
 
     # Does the dirty work of transforming a Mustache template into an
